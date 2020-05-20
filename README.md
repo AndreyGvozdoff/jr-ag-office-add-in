@@ -1,11 +1,15 @@
 # jr-ag-add-in
 
 ##How to generate office manifest.xml
-
+```
 npm install -g yo generator-office
-cd jr-ag-office-add-in/jr-office-add-in
+```
+go to cloned repo
+```
+mkdir jr-office-add-in
+cd jr-office-add-in
 yo office
-
+```
 When prompted, provide the following information to create your add-in project:
 
 Choose a project type: Office Add-in project containing the manifest only
@@ -15,7 +19,7 @@ Which Office client application would you like to support? Excel,Word,PowerPoint
 ## Project setup
 ```
 npm install
-```
+
 
 ### Compiles and hot-reloads for development
 ```
