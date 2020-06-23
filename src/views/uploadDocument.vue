@@ -26,10 +26,13 @@
                 <div class="panel-content">
                     <VPersona class="user-info" :imageUrl="baseUrl+'/assets/cache/avatars/'+userInfo[0].avatar" :size="13" :text="userInfo[0].preName +' '+ userInfo[0].lastName +' ('+ userInfo[0].id +')'" :secondaryText="baseUrl.replace('https://','')"></VPersona>
                     <ul class="ms-Grid" dir="ltr">
+                        <li>
+                            <VCheckbox v-model="useSystemLang" :label="$t('use_sys_lng_text')" box-side="end" @click.native="disableSaveBtn = false"></VCheckbox>
+                        </li>
                         <li class="ms-Grid-row select-content">
                             <div class="ms-Grid-col ms-sm3 ms-md3 ms-lg3 select-content-text">{{$t("language")}}:</div>
                             <div class="ms-Grid-col ms-sm9 ms-md9 ms-lg9">
-                                <dropdownOfficeUiFabricVue v-model="selectedLang" label="" :options="optionsLang" error-message="" @click.native="disableSaveBtn = false"></dropdownOfficeUiFabricVue>
+                                <dropdownOfficeUiFabricVue v-model="selectedLang" :disabled="useSystemLang" label="" :options="optionsLang" error-message="" @click.native="disableSaveBtn = false"></dropdownOfficeUiFabricVue>
                             </div>
                         </li>
                         <li class="ms-Grid-row select-content">
@@ -38,8 +41,8 @@
                                 <VChoiceGroup v-model="selectedTheme" :options="optionsTheme" label="" required="" @onChange="onChangeTheme"></VChoiceGroup>
                             </div>
                         </li>
-                        <li class="align-centered"><VDefaultButton :disabled="disableSaveBtn" :text="$t('user_settings_save_btn')" @click.native="saveUserSettings"></VDefaultButton></li>
-                        <li class="align-centered"><VDefaultButton :primary="true" :text="$t('logout_addin')" @click.native="logOut"></VDefaultButton></li>
+                        <li class="align-centered"><VDefaultButton :primary="true" :disabled="disableSaveBtn" :text="$t('user_settings_save_btn')" @click.native="saveUserSettings"></VDefaultButton></li>
+                        <li class="align-centered"><VDefaultButton :text="$t('logout_addin')" @click.native="logOut"></VDefaultButton></li>
                     </ul>
                 </div>
             </template>
@@ -76,7 +79,7 @@
                 </li>
             </ul>
             <div v-if="fileGuid" class="upload-new-file">
-                <VToggle v-model="uploadNewDocument" :on-text="$t('upload_new_on')" :off-text="$t('upload_new_off')" :label="$t('upload_new_text')"></VToggle>
+                <VToggle v-model="uploadNewDocument" :on-text="$t('upload_new_on')" :off-text="$t('upload_new_off')" :label="$t('upload_new_text')+':'"></VToggle>
             </div>
             <div v-if="showUploadBtn" class="upload-btn">
                 <VDefaultButton :disabled="uploadBtnDisabled" :primary="true" :text="$t('upload_btn')" @click.native.once="uploadDocument"></VDefaultButton>
@@ -101,6 +104,7 @@
     import jobRouterApi from "@/services/jobRouterApi";
     import currentLang from "../helpers/lang";
     import Vue from "vue";
+    import {languages, options} from '@/settings';
 
     const localStorage = new LocalStorageResource();
 
@@ -110,18 +114,10 @@
         data() {
             return {
                 selectedTheme: 'ms-fabric-ui-default-jr-addin',
-                optionsTheme: [
-                    {
-                        key: 'ms-fabric-ui-default-jr-addin',
-                        text: 'MS Office (default)',
-                    },
-                    {
-                        key: 'jobrouter-default-jr-addin',
-                        text: 'JobRouter'
-                    }
-                ],
+                optionsTheme: options,
                 userInfo: [],
                 addInfo: false,
+                useSystemLang: false,
                 comment: '',
                 commentMaxLimit: 255,
                 pageCount: 0,
@@ -131,6 +127,7 @@
                 optionsLang : [],
                 baseUrl: '',
                 currentLngFromJobRouterApi: '',
+                getCurrentLngFromJobRouterApiStatus: true,
                 fileName: '',
                 username: '',
                 instanceId: 0,
@@ -152,7 +149,7 @@
             }
         },
         mounted() {
-            currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi);
+            currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi, this.getCurrentLngFromJobRouterApiStatus);
         },
         created() {
             this.getDataFromStorage();
@@ -166,12 +163,13 @@
         },
         methods: {
             getDataFromStorage() {
-                localStorage.GetValues(["token", "enviromentUrl", "instanceId", "username", "language"]).then(result => {
+                localStorage.GetValues(["token", "enviromentUrl", "instanceId", "username", "language", "useSysLang"]).then(result => {
                     this.token = result.token;
                     this.baseUrl = result.enviromentUrl;
                     this.instanceId = !result.instanceId ? this.instanceId : result.instanceId;
                     this.username = result.username;
                     this.currentLngFromJobRouterApi = !result.language ? this.currentLngFromJobRouterApi : result.language;
+                    this.useSystemLang = !result.useSysLang ? this.useSystemLang : JSON.parse(result.useSysLang);
                 }).then(()=>{
                     return this.getUserInfoAndIsAuthenticated();
                 })
@@ -183,7 +181,7 @@
                         this.currentLngFromJobRouterApi = this.userInfo[0].language;
                         localStorage.StoreValue("language", this.currentLngFromJobRouterApi)
                     }
-                    currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi);
+                    currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi, this.getCurrentLngFromJobRouterApiStatus);
                     this.getAllLanguages();
                     this.getFileName();
                     this.getCurrentTheme();
@@ -217,30 +215,32 @@
             },
             getAllLanguages(){
                 jobRouterApi.getAllLanguages(this.baseUrl, this.instanceId, this.token).then(res => {
-                    for(let i = 0; i < res.length; i++){
+                    for(let i = 0; i < res.length; i++) {
                         this.optionsLang.push({key: res[i].language, text: res[i].language, title: res[i].language});
-                        if(this.currentLngFromJobRouterApi === res[i].language){
-                            this.selectedLang.push({key: res[i].language, text: res[i].language, title: res[i].language});
+                            if(this.currentLngFromJobRouterApi === res[i].language){
+                                this.selectedLang.push({key: res[i].language, text: res[i].language, title: res[i].language});
                         }
                     }
                 },(error) => {
-                    if (error.status === 401) {
-                        localStorage.removeValues(["token", "instanceId", "enviromentUrl", "username"]).then(() => {
-                            this.$router.push('/login');
-                        });
-                    }
-                    else {
-                        let errorParse = JSON.parse(error.bodyText);
-                        this.msgErrors = errorParse.errors['-'][0];
-                    }
+                    this.getCurrentLngFromJobRouterApiStatus = false;
+                     let errorParse = JSON.parse(error.bodyText);
+                     console.log(errorParse.errors['-'][0]);
+                     //remove displaying this error on front and get languages from json file
+                     //this.msgErrors = errorParse.errors['-'][0];
+                     for(let i = 0; i < languages.length; i++) {
+                        this.optionsLang.push({key: languages[i].language, text: languages[i].language, title: languages[i].language});
+                            if(this.currentLngFromJobRouterApi === languages[i].language){
+                                this.selectedLang.push({key: languages[i].language, text: languages[i].language, title: languages[i].language});
+                            }
+                        }
                 });
             },
             saveUserSettings(){
-                localStorage.StoreValues({["language"]:this.selectedLang[0].key, ["currentTheme"]:this.selectedTheme}).then(() => {
+                localStorage.StoreValues({["language"]:this.selectedLang.length ? this.selectedLang[0].key : '', ["currentTheme"]:this.selectedTheme, ["useSysLang"]:this.useSystemLang}).then(() => {
                     this.isOpenUserInfoSettings = false;
                     this.disableSaveBtn = true;
-                    this.currentLngFromJobRouterApi = this.selectedLang[0].key;
-                    currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi);
+                    this.currentLngFromJobRouterApi = this.selectedLang.length ? this.selectedLang[0].key : '';
+                    currentLang.getCurrentLangHelper(this.$route, this.currentLngFromJobRouterApi, this.getCurrentLngFromJobRouterApiStatus);
                     if (this.enviromentType === "desktop" && !this.fileName) { this.reloadAddin(); }
                 },error => {
                     let errorParse = JSON.parse(error.bodyText);
@@ -330,7 +330,7 @@
 
                 this.uploadStatus = false;
                 this.progress = 0;
-                if(this.uploadNewDocument) {
+                if(!this.uploadNewDocument) {
                     //with extra request (ver 1)
                     jobRouterApi.checkIfDocumentExistOnDocumenHub(this.baseUrl, this.instanceId, this.token, this.fileGuid).then((res) => {
                         if(res.length !== 0){
@@ -368,7 +368,6 @@
                     this.downloadUrl = response.data.documenthub.downloadUrl;
                     this.fileGuid = response.data.documenthub.guid;
                     this.mimetype = response.data.documenthub.mimetype;
-                    console.log(this.mimetype);
                 }, error => {
                     let errorParse = JSON.parse(error.bodyText);
                     this.msgErrors = errorParse.errors['-'][0];
@@ -446,23 +445,26 @@
         padding-bottom: 15px;
     }
     .add-info li:last-child {
-        padding-bottom: 0;
+        padding-bottom: 5px;
     }
     .add-info  .select-content-text {
-        padding-top: 0;
+        padding: 0;
+        word-break: break-word;
     }
     .commetn-limit-counter {
         font-size: 10px;
     }
     .upload-btn {
-        padding-top: 15px;
+        padding-top: 35px;
+        padding-bottom: 25px;
     }
     .download-hint {
-        padding-top: 15px;
+        padding: 15px 0;
     }
     .upload-new-file {
         margin: 0 auto;
         padding-bottom: 5px;
+        padding-top: 10px;
     }
     .msg-content {
         margin: 10px auto;

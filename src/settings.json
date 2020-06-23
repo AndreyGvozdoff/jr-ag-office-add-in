@@ -1,0 +1,90 @@
+{
+    "languages": [
+        {
+            "language": "arabic",
+            "locale": "ar"
+        },
+        {
+            "language": "chinese",
+            "locale": "zh"
+        },
+        {
+            "language": "czech",
+            "locale": "cs"
+        },
+        {
+            "language": "danish",
+            "locale": "da"
+        },
+        {
+            "language": "dutch",
+            "locale": "nl"
+        },
+        {
+            "language": "english",
+            "locale": "en"
+        },
+        {
+            "language": "finnish",
+            "locale": "fi"
+        },
+        {
+            "language": "french",
+            "locale": "fr"
+        },
+        {
+            "language": "german",
+            "locale": "de"
+        },
+        {
+            "language": "hungarian",
+            "locale": "hu"
+        },
+        {
+            "language": "italian",
+            "locale": "it"
+        },
+        {
+            "language": "japanese",
+            "locale": "ja"
+        },
+        {
+            "language": "polish",
+            "locale": "pl"
+        },
+        {
+            "language": "russian",
+            "locale": "ru"
+        },
+        {
+            "language": "romanian",
+            "locale": "ro"
+        },
+        {
+            "language": "slovak",
+            "locale": "sk"
+        },
+        {
+            "language": "slovenian",
+            "locale": "sl"
+        },
+        {
+            "language": "spanish",
+            "locale": "es"
+        },
+        {
+            "language": "turkish",
+            "locale": "tr"
+        }
+    ],
+    "options": [
+        {
+            "key": "ms-fabric-ui-default-jr-addin",
+            "text": "MS Office (default)"
+        },
+        {
+            "key": "jobrouter-default-jr-addin",
+            "text": "JobRouter"
+        }
+    ]
+}

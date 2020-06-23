@@ -7,6 +7,7 @@ const cert = `${homedir}/.office-addin-dev-certs/localhost.crt`;
 const ca = `${homedir}/.office-addin-dev-certs/ca.crt`;
 
 module.exports = {
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
     devServer: {
         port: process.env.npm_package_config_dev_server_port || 3000,
         https: true,

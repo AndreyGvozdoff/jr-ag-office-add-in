@@ -64,7 +64,7 @@
     .jobrouter-default-jr-addin .label {
         color:#fff!important;
     }
-    .jobrouter-default-jr-addin .ms-TextField.rootIsRequiredLabel .ms-Label:after, .label[class-required="required"]::after,.jobrouter-default-jr-addin .error-msg{
+    .jobrouter-default-jr-addin .ms-TextField.rootIsRequiredLabel .ms-Label:after, .jobrouter-default-jr-addin .label[class-required="required"]::after, .jobrouter-default-jr-addin .error-msg {
         color: #ff8a80!important;
     }
     .jobrouter-default-jr-addin .number-input__button:hover::before, .jobrouter-default-jr-addin .number-input__button:hover::after {
@@ -94,6 +94,9 @@
     }
     .jobrouter-default-jr-addin .ms-SpinButton .ms-SpinButton-container .ms-SpinButton-icons .ms-SpinButton-button {
         color: #fc3;
+    }
+    .jobrouter-default-jr-addin .ms-Panel-main .ms-Checkbox .ms-Checkbox-checkbox {
+        color: #666;
     }
 
         /*MS-Office Theme (default)*/
@@ -132,6 +135,10 @@
     }
     .ms-Checkbox {
         border:none!important;
+    }
+    .upload-new-file .ms-Toggle.root > label {
+        display: inline-block;
+        padding: 0 8px;
     }
     .fade-enter-active, .fade-leave-active {
         transition: opacity .5s;
